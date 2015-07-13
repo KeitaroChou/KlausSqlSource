@@ -1,0 +1,175 @@
+-- 練習01 - 九九乘法表(使用 WHILE 與 IF)
+
+DECLARE @A INT
+DECLARE @B INT
+SET @A = 1
+SET @B = 1
+
+WHILE	@A <= 9
+	BEGIN
+		PRINT	CAST(@A AS VARCHAR) + ' * ' + 
+				CAST(@B AS VARCHAR) + ' = ' + 
+				CAST(@A*@B AS VARCHAR)	-- 印出 A * B = A*B
+		SET @B = @B + 1
+		IF @B > 9
+			BEGIN
+				SET @A = @A + 1
+				SET @B = 1
+				--CONTINUE	-- 是否跳出是由上方 WHILE 控制，所以這裡不須使用 CONTINUE
+			END
+	END
+GO
+
+
+-- 練習01 - 九九乘法表(寫入資料表)
+
+--------------
+-- 老師解-1 --
+--------------
+DECLARE @CNTER INT
+DECLARE @CNTER1 INT
+DECLARE @NINE TABLE ( NINERIGHT INT NULL,
+					  NINELEFT INT NULL,
+					  NINEMLP INT NULL)
+SET @CNTER = 1
+
+WHILE @CNTER <= 9 
+  BEGIN
+  SET @CNTER1 = 1
+
+       WHILE @CNTER1 <= 9 
+         BEGIN
+
+		      INSERT @NINE(NINERIGHT,NINELEFT,NINEMLP)
+			  VALUES (@CNTER,@CNTER1,@CNTER*@CNTER1)
+						  
+			  SET @CNTER1=@CNTER1+1
+         END
+    SET @CNTER = @CNTER + 1
+  END
+
+IF EXISTS(SELECT * FROM SYS.TABLES WHERE NAME='NINETABLE')
+   DROP TABLE NINETABLE
+  
+SELECT * INTO NINETABLE
+FROM @NINE
+
+SELECT NINERIGHT AS 右積數, NINELEFT AS 左乘數, NINEMLP AS 乘積
+FROM NINETABLE
+
+GO
+
+--------------
+-- 老師解-2 --
+--------------
+DECLARE @CNTER INT
+DECLARE @CNTER1 INT
+DECLARE @NINE TABLE ( NINERIGHT INT NULL,
+					  NINELEFT INT NULL,
+					  NINEMLP INT NULL)
+SET @CNTER = 1
+
+WHILE @CNTER <= 9 
+  BEGIN
+  SET @CNTER1 = 1
+
+       WHILE @CNTER1 <= 9 
+         BEGIN
+
+		      INSERT @NINE(NINERIGHT,NINELEFT,NINEMLP)
+			  VALUES (@CNTER,@CNTER1,@CNTER*@CNTER1)
+						  
+			  SET @CNTER1=@CNTER1+1
+         END
+    SET @CNTER = @CNTER + 1
+  END
+
+IF EXISTS(SELECT * FROM SYS.TABLES WHERE NAME='NINETABLE')
+   DROP TABLE NINETABLE
+  
+CREATE TABLE NINETABLE ( NINERIGHT INT NULL,
+					  NINELEFT INT NULL,
+					  NINEMLP INT NULL)
+
+INSERT NINETABLE
+SELECT *
+FROM @NINE
+
+SELECT NINERIGHT AS 右積數, NINELEFT AS 左乘數, NINEMLP AS 乘積
+FROM NINETABLE
+
+GO
+
+
+-- 1 加到 100 並判斷總和為奇數或偶數
+
+DECLARE @A INT
+DECLARE @B INT
+DECLARE @S VARCHAR(20)
+
+SET	@A = 1
+SET @B = 1
+
+WHILE @A <= 100 
+	BEGIN
+		IF @B % 2 = 1	-- % 為求餘數
+			SET @S = '奇數 '
+		ELSE
+			SET @S = '偶數 '
+		PRINT	'1~100 和判斷 ' + @S + CAST(@B AS VARCHAR)
+		SET	@A = @A + 1
+		SET	@B = @B + @A
+		
+	END
+GO
+
+------------
+-- 老師解 --
+------------
+DECLARE @COUNT INT = 1
+DECLARE @SUM INT = 0
+
+WHILE @COUNT <=100 
+  BEGIN
+       SET @SUM=@SUM + @COUNT
+	   
+	   IF @SUM % 2 = 0
+	      PRINT '1~100總和偶數=' + CAST(@SUM AS VARCHAR)
+		  ELSE
+		  PRINT '1~100總和奇數=' + CAST(@SUM AS VARCHAR)
+       
+	   SET @COUNT=@COUNT+1
+  END
+ GO
+
+
+-- MERGE 練習
+
+IF EXISTS(SELECT * FROM SYS.TABLES WHERE NAME='Tmp')		-- 清除之前執行而存在的資料表'Tmp'
+	DROP TABLE Tmp
+
+CREATE TABLE Tmp (供應商編號 VARCHAR(5) NULL,
+					供應商名稱 VARCHAR(50) NULL,
+					聯絡人 VARCHAR(30) NULL,
+					聯絡人職稱 VARCHAR(30) NULL,
+					聯絡人性別 VARCHAR(2) NULL,
+					郵遞區號 VARCHAR(10) NULL,
+					地址 VARCHAR(60) NULL,
+					電話 VARCHAR(24) NULL)
+
+INSERT	Tmp
+SELECT	*
+FROM	供應商
+
+MERGE	Tmp AS T
+USING	客戶 AS B
+ON		T.供應商名稱 = B.公司名稱
+WHEN	MATCHED THEN
+			DELETE
+WHEN	NOT MATCHED BY TARGET AND B.公司名稱 LIKE '%公司%' THEN		-- WHEN NOT MATCHED 子句中只允許來源資料行和子句範圍中的資料行
+			INSERT	(供應商編號, 供應商名稱, 聯絡人, 聯絡人職稱, 聯絡人性別, 郵遞區號, 地址, 電話)
+			VALUES	(B.客戶編號, B.公司名稱, B.聯絡人, B.聯絡人職稱, B.聯絡人性別, B.郵遞區號, B.地址, B.電話)
+
+OUTPUT	$ACTION, INSERTED.*, DELETED.*		-- 顯示此執行活動所有被 INSERT 與 DELETE 的資料列
+;
+GO
