@@ -203,16 +203,6 @@ go
 ----WHERE	ProductID IN (SELECT ProductID
 ----						FROM [Order Details]
 ----						WHERE Discount >= .25);
-------------------------------------------------------
-----SELECT	LastName,
-----		FirstName,
-----		Title,
-----		Salary 
-----FROM Employees AS T1
-----WHERE Salary >= (SELECT Avg(Salary)
-----					FROM Employees
-----					WHERE T1.Title = Employees.Title
-----				) Order by Title;
 -- ===================================================
 ALTER FUNCTION Test01 ()
 RETURNS	TABLE
@@ -244,11 +234,4 @@ GO
 
 SELECT	*
 FROM	dbo.Test02()
-GO
-------------------------------------------------------
-CREATE FUNCTION Test03 ()
-
-GO
-
-SELECT	dbo.Test03()
 GO
