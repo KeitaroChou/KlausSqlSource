@@ -231,3 +231,39 @@ go
 
 insert 員工(員工編號,姓名,主管)
 values (202,'郭國王',6)
+
+
+-- 上課練習03 (CH16)
+------------
+-- 老師解 --
+------------
+DECLARE cur_emp CURSOR
+FOR
+SELECT 員工編號, 姓名,職稱
+FROM 員工           
+
+DECLARE @empID int ,
+        @empname varchar(30) ,
+        @empTitle varchar(30) ,
+		@cntTotal int,
+        @empNameList varchar(max)
+        
+SET @cntTotal = 0
+SET @empNameList = ''            
+
+OPEN cur_emp            
+ 
+FETCH NEXT FROM cur_emp INTO @empID,@empname, @empTitle
+WHILE (@@FETCH_STATUS = 0)
+BEGIN
+    if (@empid %2 <> 0)
+	begin
+    SET @empNameList = @empNameList + (convert(varchar,@empid)+'-'+@empname) + ', '
+    SET @cntTotal = @cntTotal + 1
+	end
+    FETCH NEXT FROM cur_emp INTO @empID,@empname, @empTitle
+END
+
+CLOSE cur_emp           -- 關閉資料指標cur_Products
+DEALLOCATE cur_emp     -- 移除資料指標cur_Products
+PRINT @empnamelist
